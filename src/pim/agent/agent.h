@@ -29,6 +29,8 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QList>
+#include "scheduler.h"
+#include "index.h"
 
 class KJob;
 class AbstractIndexer;
@@ -64,33 +66,12 @@ public:
     virtual void cleanup();
 
 private Q_SLOTS:
-    void findUnindexedItems();
-    void slotRootCollectionsFetched(KJob* job);
-    void slotItemFetchFinished(KJob* job);
-
-    void processNext();
-    void slotItemsReceived(const Akonadi::Item::List& items);
-    void slotCommitTimerElapsed();
     void onAbortRequested();
     void onOnlineChanged(bool online);
 
 private:
-    qlonglong indexedItemsInDatabase(const std::string& term, const QString& dbPath) const;
-    QDateTime loadLastItemMTime(const QDateTime& defaultDt = QDateTime()) const;
-    void createIndexers();
-    void addIndexer(AbstractIndexer *indexer);
-    AbstractIndexer* indexerForItem(const Akonadi::Item& item) const;
-    QList<AbstractIndexer*> indexersForCollection(const Akonadi::Collection& collection) const;
-
-    Akonadi::Item::List m_items;
-    QTimer m_timer;
-    QDateTime m_lastItemMTime;
-    QList<KJob*> m_jobs;
-
-    QMap<QString, AbstractIndexer* > m_indexers;
-
-    QTimer m_commitTimer;
-    bool m_inProgress;
+    Scheduler *m_scheduler;
+    Index *m_index;
 };
 
 #endif // AGENT_H
