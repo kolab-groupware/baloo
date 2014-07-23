@@ -13,10 +13,12 @@ set(akonadi_baloo_indexer_SRCS
     contactindexer.cpp
     akonotesindexer.cpp
     calendarindexer.cpp
+    collectionindexer.cpp
     ../../file/priority.cpp
     scheduler.cpp
     collectionindexingjob.cpp
     index.cpp
+    collectionupdatejob.cpp
 )
 
 qt4_add_dbus_adaptor(akonadi_baloo_indexer_SRCS org.freedesktop.Akonadi.BalooIndexer.xml agent.h BalooIndexingAgent)
