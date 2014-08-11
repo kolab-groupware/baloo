@@ -60,7 +60,7 @@ static QByteArray getPath(const Akonadi::Collection& collection)
     QStringList pathParts;
     pathParts << collection.displayName();
     Akonadi::Collection col = collection;
-    while (col.parentCollection().isValid()) {
+    while (col.parentCollection().isValid() && (col.parentCollection() != Akonadi::Collection::root())) {
         col = col.parentCollection();
         pathParts.prepend(col.displayName());
     }
