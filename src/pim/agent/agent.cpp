@@ -37,6 +37,7 @@
 #include <Akonadi/CollectionFetchScope>
 #include <Akonadi/AgentManager>
 #include <Akonadi/ServerManager>
+#include <Akonadi/EntityDisplayAttribute>
 
 #include <KStandardDirs>
 #include <KConfig>
@@ -85,6 +86,7 @@ BalooIndexingAgent::BalooIndexingAgent(const QString& id)
     changeRecorder()->itemFetchScope().setFetchRemoteIdentification(false);
     changeRecorder()->itemFetchScope().setFetchModificationTime(false);
     changeRecorder()->collectionFetchScope().setAncestorRetrieval(Akonadi::CollectionFetchScope::All);
+    changeRecorder()->collectionFetchScope().fetchAncestorAttribute<Akonadi::EntityDisplayAttribute>();
     changeRecorder()->setChangeRecordingEnabled(false);
     changeRecorder()->fetchCollection(true);
 
@@ -181,6 +183,7 @@ void BalooIndexingAgent::collectionAdded(const Akonadi::Collection& collection, 
 
 void BalooIndexingAgent::collectionChanged(const Akonadi::Collection& collection)
 {
+    //FIXME this is only required if the collections name changed
     CollectionUpdateJob *job = new CollectionUpdateJob(m_index, collection, this);
     job->start();
 }

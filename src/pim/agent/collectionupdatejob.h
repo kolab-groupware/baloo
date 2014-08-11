@@ -28,7 +28,7 @@
 #include "index.h"
 
 /**
- * A Job that indexes a collection and all it's children in order to correctly update the paths (for which we need to fetch the display attribute).
+ * A Job that indexes a collection and all it's children in order to correctly update the paths (for which we need to have the display attribute available).
  */
 class CollectionUpdateJob : public KJob
 {
@@ -41,15 +41,9 @@ public:
 private Q_SLOTS:
     void onCollectionsReceived(const Akonadi::Collection::List &);
     void onCollectionsFetched(KJob *);
-    void onAncestorsFetched(KJob *);
 
 private:
-    void finalize();
     Akonadi::Collection mCol;
-    QHash<Akonadi::Collection::Id, Akonadi::Collection> mAncestors;
-    bool mChildrenFetched;
-    Akonadi::Collection::List mChildCollections;
-    bool mAncestorsFetched;
     Index &mIndex;
 };
 

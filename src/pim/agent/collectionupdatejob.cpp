@@ -23,6 +23,7 @@
 #include <Akonadi/Collection>
 #include <Akonadi/CollectionFetchJob>
 #include <Akonadi/CollectionFetchScope>
+#include <Akonadi/EntityDisplayAttribute>
 
 CollectionUpdateJob::CollectionUpdateJob(Index &index, const Akonadi::Collection &col, QObject* parent)
     : KJob(parent),
@@ -34,33 +35,23 @@ CollectionUpdateJob::CollectionUpdateJob(Index &index, const Akonadi::Collection
 
 void CollectionUpdateJob::start()
 {
-    Akonadi::Collection::List ancestors;
-    Akonadi::Collection ancestor = mCol.parentCollection();
-    while (ancestor.isValid() && (ancestor != Akonadi::Collection::root())) {
-        ancestors << ancestor;
-        ancestor = ancestor.parentCollection();
-    }
-    if (!ancestors.isEmpty()) {
-        // Fetch ancestors to get the display attribute
-        Akonadi::CollectionFetchJob *fetchJob = new Akonadi::CollectionFetchJob(ancestors, Akonadi::CollectionFetchJob::Base, this);
-        fetchJob->fetchScope().setListFilter(Akonadi::CollectionFetchScope::NoFilter);
-        connect(fetchJob, SIGNAL(result(KJob*)), this, SLOT(onAncestorsFetched(KJob*)));
-    } else {
-        mAncestorsFetched = true;
-    }
+    mIndex.change(mCol);
 
-    { //Fetch children to update the path accordingly
-        Akonadi::CollectionFetchJob *fetchJob = new Akonadi::CollectionFetchJob(mCol, Akonadi::CollectionFetchJob::Recursive, this);
-        fetchJob->fetchScope().setAncestorRetrieval(Akonadi::CollectionFetchScope::All);
-        fetchJob->fetchScope().setListFilter(Akonadi::CollectionFetchScope::NoFilter);
-        connect(fetchJob, SIGNAL(collectionsReceived(Akonadi::Collection::List)), this, SLOT(onCollectionsReceived(Akonadi::Collection::List)));
-        connect(fetchJob, SIGNAL(result(KJob*)), this, SLOT(onCollectionsFetched(KJob*)));
-    }
+    //Fetch children to update the path accordingly
+    Akonadi::CollectionFetchJob *fetchJob = new Akonadi::CollectionFetchJob(mCol, Akonadi::CollectionFetchJob::Recursive, this);
+    fetchJob->fetchScope().setAncestorRetrieval(Akonadi::CollectionFetchScope::All);
+    fetchJob->fetchScope().fetchAncestorAttribute<Akonadi::EntityDisplayAttribute>();
+    fetchJob->fetchScope().setListFilter(Akonadi::CollectionFetchScope::NoFilter);
+    connect(fetchJob, SIGNAL(collectionsReceived(Akonadi::Collection::List)), this, SLOT(onCollectionsReceived(Akonadi::Collection::List)));
+    connect(fetchJob, SIGNAL(result(KJob*)), this, SLOT(onCollectionsFetched(KJob*)));
 }
 
 void CollectionUpdateJob::onCollectionsReceived(const Akonadi::Collection::List &list)
 {
-    mChildCollections << list;
+    //Required to update the path
+    Q_FOREACH (const Akonadi::Collection &child, list) {
+        mIndex.change(child);
+    }
 }
 
 void CollectionUpdateJob::onCollectionsFetched(KJob *job)
@@ -68,63 +59,6 @@ void CollectionUpdateJob::onCollectionsFetched(KJob *job)
     if (job->error()) {
         kWarning() << job->errorString();
     }
-    mChildrenFetched = true;
-    finalize();
-}
-
-static Akonadi::Collection replaceParent(const Akonadi::Collection &col, const QHash<Akonadi::Collection::Id, Akonadi::Collection> &ancestors)
-{
-    if (!col.isValid()) {
-        return col;
-    }
-    const Akonadi::Collection parent = replaceParent(col.parentCollection(), ancestors);
-    if (!parent.isValid() || parent == Akonadi::Collection::root()) {
-        return col;
-    }
-    Akonadi::Collection collection = col;
-    //The first collection is usually not in ancestors
-    if(ancestors.contains(col.id())) {
-        collection = ancestors.value(col.id());
-    }
-    collection.setParentCollection(parent);
-    return collection;
-}
-
-void CollectionUpdateJob::onAncestorsFetched(KJob *job)
-{
-    if (job->error()) {
-        kWarning() << job->errorString();
-    }
-    Akonadi::CollectionFetchJob *fetchJob = static_cast<Akonadi::CollectionFetchJob*>(job);
-    mAncestorsFetched = true;
-    Akonadi::Collection::List matchingCollections;
-    Q_FOREACH (const Akonadi::Collection &c, fetchJob->collections()) {
-        mAncestors.insert(c.id(), c);
-    }
-    finalize();
-}
-
-void CollectionUpdateJob::finalize()
-{
-    if (!mChildrenFetched || !mAncestorsFetched) {
-        return;
-    }
-    const Akonadi::Collection c = replaceParent(mCol, mAncestors);
-    mAncestors.insert(c.id(), c);
-    mIndex.change(c);
-
-    //Required to update the path
-    while (!mChildCollections.isEmpty()) {
-        Akonadi::Collection child = mChildCollections.takeFirst();
-        if (mAncestors.contains(child.parentCollection().id())) {
-            const Akonadi::Collection c = replaceParent(child, mAncestors);
-            mAncestors.insert(c.id(), c);
-            mIndex.change(c);
-        } else {
-            mChildCollections.append(child);
-        }
-    }
-
     emitResult();
 }
 
