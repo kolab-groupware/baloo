@@ -86,7 +86,7 @@ BalooIndexingAgent::BalooIndexingAgent(const QString& id)
     changeRecorder()->itemFetchScope().setFetchRemoteIdentification(false);
     changeRecorder()->itemFetchScope().setFetchModificationTime(false);
     changeRecorder()->collectionFetchScope().setAncestorRetrieval(Akonadi::CollectionFetchScope::All);
-    changeRecorder()->collectionFetchScope().fetchAncestorAttribute<Akonadi::EntityDisplayAttribute>();
+    changeRecorder()->collectionFetchScope().ancestorFetchScope().fetchAttribute<Akonadi::EntityDisplayAttribute>();
     changeRecorder()->setChangeRecordingEnabled(false);
     changeRecorder()->fetchCollection(true);
 
