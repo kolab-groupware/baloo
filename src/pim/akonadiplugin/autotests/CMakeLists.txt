@@ -6,6 +6,7 @@ set(searchplugintest_SRCS
     searchplugintest.cpp
     ../searchplugin.cpp
     ../../agent/emailindexer.cpp
+    ../../agent/calendarindexer.cpp
     ../../agent/contactindexer.cpp
     ../../agent/abstractindexer.cpp
     ../../agent/akonotesindexer.cpp
@@ -13,6 +14,7 @@ set(searchplugintest_SRCS
     ../../search/email/emailsearchstore.cpp
     ../../search/email/agepostingsource.cpp
     ../../search/contact/contactsearchstore.cpp
+    ../../search/calendar/calendarsearchstore.cpp
     ../../search/note/notesearchstore.cpp
 )
 
@@ -28,6 +30,7 @@ target_link_libraries(searchplugintest
     ${KDEPIMLIBS_KABC_LIBS}
     ${XAPIAN_LIBRARIES}
     ${KDEPIMLIBS_KPIMUTILS_LIBS}
+    ${KDEPIMLIBS_KCALCORE_LIBS}
     baloocore
     balooxapian
 )

@@ -31,6 +31,12 @@ CalendarSearchStore::CalendarSearchStore(QObject* parent)
     : PIMSearchStore(parent)
 {
     m_prefix.insert("collection", "C");
+    m_prefix.insert("organizer", "O");
+    m_prefix.insert("partstatus", "PS");
+    m_prefix.insert("summary", "S");
+    m_prefix.insert("location", "L");
+
+    m_boolWithValue <<  "partstatus";
 
     setDbPath(findDatabase("calendars"));
 }
