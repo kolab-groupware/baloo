@@ -90,6 +90,7 @@ BalooIndexingAgent::BalooIndexingAgent(const QString& id)
     changeRecorder()->collectionFetchScope().setListFilter(Akonadi::CollectionFetchScope::Index);
     changeRecorder()->setChangeRecordingEnabled(false);
     changeRecorder()->fetchCollection(true);
+    changeRecorder()->setExclusive(true);
 
     new BalooIndexerAdaptor(this);
 
