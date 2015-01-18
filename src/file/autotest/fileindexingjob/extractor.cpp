@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 
         if (timeoutFiles.contains(fid)) {
             // 100 msecs
-            usleep(100 * 1000);
+            sleep(100);
         }
     }
 

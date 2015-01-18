@@ -26,8 +26,9 @@
 
 #ifdef __GNUC__
 #include <malloc.h>
-#include <unistd.h>
 #endif
+
+#include <unistd.h>
 
 using namespace Baloo;
 
@@ -175,10 +176,10 @@ Xapian::WritableDatabase XapianDatabase::createWritableDb()
             return wdb;
         }
         catch (const Xapian::DatabaseLockError&) {
-            usleep(i * 50 * 1000);
+            sleep(i * 50 );
         }
         catch (const Xapian::DatabaseModifiedError&) {
-            usleep(i * 50 * 1000);
+            sleep(i * 50 );
         }
         catch (const Xapian::DatabaseCreateError& err) {
             kDebug() << err.get_error_string();
